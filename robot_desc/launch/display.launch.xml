@@ -1,0 +1,17 @@
+<launch>
+
+    <!-- MAKE THE VARIABLE FOR URDF PATH AND RVIZ CONFIG PATH -->
+    <let name="urdf_path" value="$(find-pkg-share my_robot_desc)/urdf/my_robot_advance_xacro.urdf.xacro" />
+    <let name="rviz_config_path" value="$(find-pkg-share my_robot_desc)/rviz/urdf_config.rviz" />
+    
+    <node pkg="robot_state_publisher" exec="robot_state_publisher">
+        <param name="robot_description" value="$(command 'xacro $(var urdf_path)')"/>
+    </node>
+
+
+    <!-- LAUNCH JOINT STATE PUBLISHER GUI -->
+    <node pkg="joint_state_publisher_gui" exec="joint_state_publisher_gui" />
+
+    <!-- LAUNCH RVIZ2 -->
+    <node pkg="rviz2" exec="rviz2" args="-d $(var rviz_config_path)" />
+</launch>
