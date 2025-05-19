@@ -5,4 +5,5 @@
     <!-- <xacro:include filename="mobile_base_coll_iner_with_stl.xacro"/> -->
     <xacro:include filename="mobile_base.xacro"/>
     <xacro:include filename="ros2_control.xacro"/>
+    <xacro:include filename="lidar.xacro"/>
 </robot>

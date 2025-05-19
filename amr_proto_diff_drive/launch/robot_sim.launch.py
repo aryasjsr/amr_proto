@@ -40,15 +40,6 @@ def generate_launch_description():
             ),
         ]
     )
-
-    rviz_config_dir = PathJoinSubstitution(
-        [
-            FindPackageShare('amr_proto_diff_drive'),
-            'worlds',
-            'config2.rviz',
-        ]
-    )
-    
     robot_description = {'robot_description': robot_description_content}
     
     # Robot Controllers declaration path
@@ -97,28 +88,35 @@ def generate_launch_description():
     bridge = Node(
         package='ros_gz_bridge',
         executable='parameter_bridge',
-        arguments=['/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock'],
+        arguments=[ '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
+                    '/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
+		            '/odom@nav_msgs/msg/Odometry@gz.msgs.Odometry',
+		            '/camera/image_raw@sensor_msgs/msg/Image@gz.msgs.Image',
+	                '/camera/camera_info@sensor_msgs/msg/CameraInfo@gz.msgs.CameraInfo',
+	                '/scan@sensor_msgs/msg/LaserScan@gz.msgs.LaserScan',
+	                '/joint_states@sensor_msgs/msg/JointState@gz.msgs.Model'],
         output='screen'
     )
-
-    #Launch RViz2
-    rviz_node = Node(
-            package='rviz2',
-            executable='rviz2',
-            name='rviz2',
-            arguments=['-d', rviz_config_dir],
-            output='screen'
+    world_path = os.path.join(
+        get_package_share_directory('amr_proto_diff_drive'),
+        'worlds',
+        'empty_world.world'
     )
-    
+    gz_args = f'-r -v 4 {world_path}'
 
     return LaunchDescription([
         # Launch gazebo environment
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
-                [PathJoinSubstitution([FindPackageShare('ros_gz_sim'),
-                                       'launch',
-                                       'gz_sim.launch.py'])]),
-            launch_arguments=[('gz_args', [' -r -v 1 empty.sdf'])]),
+                PathJoinSubstitution([
+                    FindPackageShare('ros_gz_sim'),
+                    'launch',
+                    'gz_sim.launch.py'
+                ])
+            ),
+            launch_arguments={'gz_args': gz_args}.items()
+        ),
+        gz_spawn_entity,
         RegisterEventHandler(
             event_handler=OnProcessExit(
                 target_action=gz_spawn_entity,
@@ -131,11 +129,9 @@ def generate_launch_description():
                 on_exit=[diff_drive_base_controller_spawner],
             )
         ),
-        rviz_node,
-        bridge,
+        # rviz_node,
         node_robot_state_publisher,
-        gz_spawn_entity,
-
+        bridge,
         # Launch Arguments
         DeclareLaunchArgument(
             'use_sim_time',

@@ -26,16 +26,6 @@
                         o_xyz="0 0 0.1" o_rpy="0 0 0"/>
   </link>
 
-  <!-- LIDAR -->
-  <link name="lidar_link">
-    <visual>
-      <geometry>
-          <cylinder radius="0.1" length="0.05"/>
-      </geometry>
-      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
-      <material name="white"/>
-    </visual>    
-  </link>
 
   <!-- MACRO FOR WHEEL LINK -->
 
@@ -89,12 +79,7 @@
                           o_xyz="0 0 0" o_rpy="0 0 0" />
   </link>
 
-  <!-- BASE-LIDAR JOINT  -->
-  <joint name="base_lidar_joint" type="fixed">
-    <origin xyz="0 0 0.225" rpy="0.0 0.0 0.0"/>
-    <parent link="base_link"/>
-    <child link="lidar_link"/>
-  </joint>
+  
 
   <!-- BASE-LEFT WHEEL JOINT -->
   <joint name="left_wheel_joint" type="continuous">
