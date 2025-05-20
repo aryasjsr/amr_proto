@@ -14,7 +14,7 @@
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
-from launch.actions import RegisterEventHandler
+from launch.actions import RegisterEventHandler, ExecuteProcess
 from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution
@@ -28,20 +28,35 @@ def generate_launch_description():
     # Launch Arguments
     use_sim_time = LaunchConfiguration('use_sim_time', default=True)
 
-    # Robot Description declaration path and parse
-    # This will parse the xacro file and generate the URDF
-    robot_description_content = Command(
-        [
-            PathJoinSubstitution([FindExecutable(name='xacro')]),
-            ' ',
-            PathJoinSubstitution(
-                [FindPackageShare('amr_proto_diff_drive'),
-                 'description', 'robot_main.xacro']
-            ),
-        ]
+    rsp = IncludeLaunchDescription(
+                PythonLaunchDescriptionSource([os.path.join(
+                    get_package_share_directory('amr_proto_diff_drive'),'launch','rsp.launch.py'
+                )]), launch_arguments={'use_sim_time': 'true'}.items()
     )
-    robot_description = {'robot_description': robot_description_content}
+
+    joystick = IncludeLaunchDescription(
+                PythonLaunchDescriptionSource([os.path.join(
+                    get_package_share_directory('amr_proto_diff_drive'),'launch','teleop_joy.launch.py'
+                )]), launch_arguments={'use_sim_time': 'true'}.items()
+    )
     
+
+    
+    gazebo_params_file = os.path.join(get_package_share_directory('amr_proto_diff_drive'),'config','ros2_control_sim.yaml')
+
+
+    gz = IncludeLaunchDescription(
+            PythonLaunchDescriptionSource([os.path.join(
+                get_package_share_directory('gazebo_ros'), 'launch', 'gazebo.launch.py')]),
+                launch_arguments={'extra_gazebo_args': '--ros-args --params-file ' + gazebo_params_file}.items()
+            )
+
+ 
+
+    gz_spawn_entity = Node(package='gazebo_ros', executable='spawn_entity.py',
+                    arguments=['-topic', 'robot_description','-entity', 'my_robot',],
+                    output='screen')
+
     # Robot Controllers declaration path
     robot_controllers = PathJoinSubstitution(
         [
@@ -51,71 +66,38 @@ def generate_launch_description():
         ]
     )
 
-    #LAUNCH RSP
-    node_robot_state_publisher = Node(
-        package='robot_state_publisher',
-        executable='robot_state_publisher',
-        output='screen',
-        parameters=[robot_description]
-    )
-
-    # Spawn robot in gz 
-    gz_spawn_entity = Node(
-        package='ros_gz_sim',
-        executable='create',
-        output='screen',
-        arguments=['-topic', 'robot_description', '-name',
-                   'diff_drive', '-allow_renaming', 'true'],
-    )
-    # Spawn joint state broadcaster controllers
-    joint_state_broadcaster_spawner = Node(
-        package='controller_manager',
-        executable='spawner',
-        arguments=['joint_state_broadcaster'],
-    )
-    # Spawn diff drive controller
-    diff_drive_base_controller_spawner = Node(
-        package='controller_manager',
-        executable='spawner',
-        arguments=[
-            'diff_drive_base_controller',
-            '--param-file',
-            robot_controllers,
-            ],
-    )
-
-    # Bridge
-    bridge = Node(
-        package='ros_gz_bridge',
-        executable='parameter_bridge',
-        arguments=[ '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
-                    '/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist',
-		            '/odom@nav_msgs/msg/Odometry@gz.msgs.Odometry',
-		            '/camera/image_raw@sensor_msgs/msg/Image@gz.msgs.Image',
-	                '/camera/camera_info@sensor_msgs/msg/CameraInfo@gz.msgs.CameraInfo',
-	                '/scan@sensor_msgs/msg/LaserScan@gz.msgs.LaserScan',
-	                '/joint_states@sensor_msgs/msg/JointState@gz.msgs.Model'],
+    # # Spawn joint state broadcaster
+    # joint_state_broadcaster_spawner = Node(
+    #     package='controller_manager',
+    #     executable='spawner',
+    #     arguments=['joint_state_broadcaster'],
+    #     output='screen',
+    # )
+    # # Spawn diff drive controller
+    # diff_drive_base_controller_spawner = Node(
+    #     package='controller_manager',
+    #     executable='spawner',
+    #     arguments=['diff_drive_base_controller'],
+    #     output='screen',
+    # )
+    joint_state_broadcaster_spawner  = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
+             'joint_state_broadcaster'],
         output='screen'
     )
-    world_path = os.path.join(
-        get_package_share_directory('amr_proto_diff_drive'),
-        'worlds',
-        'empty_world.world'
+
+    diff_drive_base_controller_spawner = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
+             'diff_drive_base_controller'],
+        output='screen'
     )
-    gz_args = f'-r -v 4 {world_path}'
+
 
     return LaunchDescription([
-        # Launch gazebo environment
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(
-                PathJoinSubstitution([
-                    FindPackageShare('ros_gz_sim'),
-                    'launch',
-                    'gz_sim.launch.py'
-                ])
-            ),
-            launch_arguments={'gz_args': gz_args}.items()
-        ),
+        DeclareLaunchArgument('use_sim_time',default_value=use_sim_time,description='If true, use simulated clock'),
+        
+        rsp,
+        gz,
         gz_spawn_entity,
         RegisterEventHandler(
             event_handler=OnProcessExit(
@@ -129,12 +111,6 @@ def generate_launch_description():
                 on_exit=[diff_drive_base_controller_spawner],
             )
         ),
-        # rviz_node,
-        node_robot_state_publisher,
-        bridge,
-        # Launch Arguments
-        DeclareLaunchArgument(
-            'use_sim_time',
-            default_value=use_sim_time,
-            description='If true, use simulated clock'),
+        joystick,
+
     ])

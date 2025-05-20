@@ -33,40 +33,32 @@
     <!-- GAZEBO SIMULATED SENSOR LIDAR-->
 
     <gazebo reference="lidar">
-        <sensor type="gpu_lidar" name="lidar">
-            <always_on>true</always_on>
-            <enable_metrics>true</enable_metrics>
+        <!-- <material>Gazebo/Black</material> -->
+
+        <sensor name="laser" type="ray">
             <pose> 0 0 0 0 0 0 </pose>
-            <visualize>true</visualize>
-            <update_rate>30</update_rate>
+            <visualize>false</visualize>
+            <update_rate>10</update_rate>
             <ray>
                 <scan>
                     <horizontal>
-                        <resolution>1</resolution>
                         <samples>360</samples>
-                        <min_angle>-3.14159</min_angle>
-                        <max_angle>3.14159</max_angle>
+                        <min_angle>-3.14</min_angle>
+                        <max_angle>3.14</max_angle>
                     </horizontal>
-                    <vertical>
-                        <samples>1</samples>
-                        <resolution>0.01</resolution>
-                        <min_angle>0</min_angle>
-                        <max_angle>0</max_angle>
-                    </vertical>
                 </scan>
                 <range>
                     <min>0.3</min>
-                    <max>12.0</max>
-                    <resolution>0.01</resolution>
+                    <max>12</max>
                 </range>
-                <noise>
-                    <type>gaussian</type>
-                    <mean>0.0</mean>
-                    <stddev>0.01</stddev>
-                </noise>
             </ray>
-            <topic>scan</topic>
-            <gz_frame_id>lidar</gz_frame_id>
+            <plugin name="laser_controller" filename="libgazebo_ros_ray_sensor.so">
+                <ros>
+                    <argument>~/out:=scan</argument>
+                </ros>
+                <output_type>sensor_msgs/LaserScan</output_type>
+                <frame_name>lidar</frame_name>
+            </plugin>
         </sensor>
     </gazebo>
 

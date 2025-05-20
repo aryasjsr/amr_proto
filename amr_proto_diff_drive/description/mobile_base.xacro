@@ -4,6 +4,7 @@
 
     <!--BASE FOOTPRINT  -->
   <link name="base_footprint"/>
+  
 
   <!-- BASE -->
   <link name="base_link">
@@ -54,7 +55,17 @@
   <!-- CALL MACRO FOR RIGHT WHEEL AND LEFT WHEEL -->
   <xacro:wheel_link prefix="left"/>
   <xacro:wheel_link prefix="right"/>
+  <gazebo reference="left_wheel">
+      <material>Gazebo/Black</material>
+      <mu1 value="1.0"/>
+      <mu2 value="1.0"/>
+  </gazebo>
 
+  <gazebo reference="right_wheel">
+      <material>Gazebo/Black</material>
+      <mu1 value="1.0"/>
+      <mu2 value="1.0"/>
+  </gazebo>
 
 
   <!-- CASTER WHEEL -->
@@ -78,7 +89,11 @@
     <xacro:sphere_inertia m="0.5" r="0.05" 
                           o_xyz="0 0 0" o_rpy="0 0 0" />
   </link>
-
+    
+  <gazebo reference="caster_wheel">
+      <mu1 value="0.001"/>
+      <mu2 value="0.001"/>
+  </gazebo>
   
 
   <!-- BASE-LEFT WHEEL JOINT -->
