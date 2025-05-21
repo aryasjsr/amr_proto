@@ -12,6 +12,7 @@ install(DIRECTORY
   config
   description
   worlds
+  meshes
   DESTINATION share/${PROJECT_NAME}/
 )
 
