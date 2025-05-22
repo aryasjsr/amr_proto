@@ -14,7 +14,7 @@
     </visual> 
     <collision>
         <geometry>
-            <cylinder length="0.05" radius="0.1"/>
+            <cylinder length="0.2" radius="0.1"/>
         </geometry>
     </collision>
     <inertial>
@@ -25,7 +25,7 @@
     
     <!-- BASE-LIDAR JOINT  -->
     <joint name="base_lidar_joint" type="fixed">
-        <origin xyz="0.26 0 0.23" rpy="0.0 0.0 0.0"/>
+        <origin xyz="0.3 0 0.8" rpy="0.0 0.0 0.0"/>
         <parent link="chassis"/>
         <child link="lidar"/>
     </joint>
@@ -56,7 +56,7 @@
                 </scan>
                 <range>
                     <min>0.3</min>
-                    <max>12.0</max>
+                    <max>10.0</max>
                     <resolution>0.01</resolution>
                 </range>
                 <noise>

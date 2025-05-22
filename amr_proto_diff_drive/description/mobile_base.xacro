@@ -18,7 +18,7 @@
       <geometry>
         <box size="2.01142 1 0.568726"/>
       </geometry>
-      <material name="orange"/>
+      <material name="red"/>
     </visual>
 
     <inertial>
@@ -117,6 +117,39 @@
     </inertial>
   </link>
 
+  <!-- caster rear wheel Link -->
+  <link name="caster_rear">
+    <collision>
+      <geometry>
+        <sphere radius="0.2"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <geometry>
+        <sphere radius="0.2"/>
+      </geometry>
+      <material name="white"/>
+    </visual>
+
+    <inertial>
+      <origin xyz="-0.957138 -0 0.2" rpy="0 0 0"/>
+      <mass value="0.005"/>
+      <inertia
+        ixx="0.1"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="0.1"
+        iyz="0.0"
+        izz="0.1"/>
+    </inertial>
+  </link>
+
+  <gazebo reference="caster">
+      <mu1 value="0.001"/>
+      <mu2 value="0.001"/>
+  </gazebo>
+
   <!-- JOINT    -->
 
   <joint name="base_footprint_joint" type="fixed">
@@ -131,8 +164,14 @@
     <child link="caster"/>
   </joint>
 
+  <joint name="caster_joint_rear" type="fixed">
+    <origin xyz="0.4 -0 0.2" rpy="0 0 0"/>
+    <parent link="chassis"/>
+    <child link="caster_rear"/>
+  </joint>
+
   <joint name="left_wheel_joint" type="continuous">
-    <origin xyz="0.554283 0.625029 0.3" rpy="-1.5707 0 0"/>
+    <origin xyz="-0.0 0.625029 0.2" rpy="-1.5707 0 0"/>
     <parent link="chassis"/>
     <child link="left_wheel"/>
     <axis xyz="0 0 1"/>
@@ -140,7 +179,7 @@
   </joint>
 
   <joint name="right_wheel_joint" type="continuous">
-    <origin xyz="0.554283 -0.625029 0.3" rpy="-1.5707 0 0"/>
+    <origin xyz="-0.0 -0.625029 0.2" rpy="-1.5707 0 0"/>
     <parent link="chassis"/>
     <child link="right_wheel"/>
     <axis xyz="0 0 1"/>
