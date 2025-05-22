@@ -7,7 +7,7 @@
   
 
   <!-- BASE -->
-  <link name="base_link">
+  <link name="chassis">
     <visual>
       <geometry>
         <box size="0.6 0.4 0.2"/> 
@@ -99,7 +99,7 @@
   <!-- BASE-LEFT WHEEL JOINT -->
   <joint name="left_wheel_joint" type="continuous">
     <origin xyz="-0.15 0.225 0.0" rpy="0.0 0.0 0.0"/>
-    <parent link="base_link"/>
+    <parent link="chassis"/>
     <child link="left_wheel_link"/>
     <axis xyz="0 1 0.0"/>
   </joint>
@@ -107,7 +107,7 @@
   <!-- BASE-RIGHT WHEEL JOINT -->
   <joint name="right_wheel_joint" type="continuous">
     <origin xyz="-0.15 -0.225 0.0" rpy="0.0 0.0 0.0"/>
-    <parent link="base_link"/>
+    <parent link="chassis"/>
     <child link="right_wheel_link"/>
     <axis xyz="0 1 0.0"/>
   </joint>
@@ -115,7 +115,7 @@
   <!-- BASE-CASTER JOINT  -->
   <joint name="base_caster_wheel_joint" type="fixed">
     <origin xyz="0.2 0.0 -0.05" rpy="0.0 0.0 0.0"/>
-    <parent link="base_link"/>
+    <parent link="chassis"/>
     <child link="caster_wheel_link"/>
   </joint>
 
@@ -123,6 +123,6 @@
   <joint name="base_joint" type="fixed">
     <origin xyz="0.0 0 0.1" rpy="0.0 0.0 0.0"/>
     <parent link="base_footprint"/>
-    <child link="base_link"/>
+    <child link="chassis"/>
   </joint>
 </robot>
