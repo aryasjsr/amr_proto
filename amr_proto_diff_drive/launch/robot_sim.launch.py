@@ -91,7 +91,13 @@ def generate_launch_description():
              'diff_drive_base_controller'],
         output='screen'
     )
-
+    twist_mux_params = os.path.join(get_package_share_directory('amr_proto_diff_drive'),'config','twist_mux.yaml')
+    twist_mux = Node(
+            package="twist_mux",
+            executable="twist_mux",
+            parameters=[twist_mux_params, {'use_sim_time': True}],
+            remappings=[('/cmd_vel_out','/diff_drive_base_controller/cmd_vel_unstamped')]
+        )
 
     return LaunchDescription([
         DeclareLaunchArgument('use_sim_time',default_value=use_sim_time,description='If true, use simulated clock'),
@@ -111,6 +117,8 @@ def generate_launch_description():
                 on_exit=[diff_drive_base_controller_spawner],
             )
         ),
+        twist_mux,
         joystick,
+
 
     ])
