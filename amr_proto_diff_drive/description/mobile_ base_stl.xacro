@@ -1,0 +1,163 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:property name="mesh_path" value="$(find amr_proto_diff_drive)/meshes"/>
+  <xacro:property name="PI" value="3.1415926535897931"/>
+  <xacro:property name="wheel_radius" value="0.07915"/> <!-- 158.3 mm / 2 / 1000 -->
+  <xacro:property name="wheel_length" value="0.0552"/>   <!-- 55.2 mm / 1000 -->
+  <xacro:property name="wheel_mass" value="1.0"/>
+  <xacro:property name="wheel_inertia" value="${(1/2.0) * wheel_mass * wheel_radius**2}"/>
+
+  <xacro:property name="chassis_x" value="1.08"/>  <!-- 108 cm * 0.01 -->
+  <xacro:property name="chassis_y" value="0.63"/>
+  <xacro:property name="chassis_z" value="0.43"/>
+  <xacro:property name="chassis_mass" value="5.0"/>
+  <xacro:property name="chassis_ixx" value="${(1.0/12.0) * chassis_mass * (chassis_y**2 + chassis_z**2)}"/>
+  <xacro:property name="chassis_iyy" value="${(1.0/12.0) * chassis_mass * (chassis_x**2 + chassis_z**2)}"/>
+  <xacro:property name="chassis_izz" value="${(1.0/12.0) * chassis_mass * (chassis_x**2 + chassis_y**2)}"/>
+  
+  <xacro:property name="caster_radius" value="0.1"/>
+  <xacro:property name="caster_mass" value="0.5"/>
+  <xacro:property name="caster_inertia" value="${(2.0/5.0) * caster_mass * caster_radius**2}"/>
+  <link name="base_footprint"/>
+    
+  <!-- Base Link -->
+  <link name="chassis">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${chassis_x} ${chassis_y} ${chassis_z}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 0.0" rpy="-1.57 0 0"/>
+      <geometry>
+        <!-- <box size="2.01142 1 0.568726"/> -->
+         <mesh filename="file://${mesh_path}/chassis4.stl" scale="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="orange"/>
+    </visual>
+
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="${chassis_mass}"/>
+      <inertia
+        ixx="${chassis_ixx}" ixy="0.0" ixz="0.0"
+        iyy="${chassis_iyy}" iyz="0.0"
+        izz="${chassis_izz}"/>
+    </inertial>
+  </link>
+
+
+  <!-- left wheel Link -->
+  <link name="left_wheel">
+    <collision>
+      <geometry>
+        <sphere radius="${wheel_radius}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <geometry>
+        <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+        <!-- <mesh filename="file://${mesh_path}/left_wheel2.stl" scale="0.001 0.001 0.001"/> -->
+      </geometry>
+      <origin xyz="0 0 0" rpy="1.57 0 0"/>
+      <material name="white"/>
+    </visual>
+
+    <inertial>
+      <mass value="${wheel_mass}"/>
+      <inertia
+        ixx="${wheel_inertia}" iyy="${(1/12.0)*wheel_mass*(3*wheel_radius**2 + wheel_length**2)}" izz="${wheel_inertia}"
+        ixy="0.0" ixz="0.0" iyz="0.0"/>
+      </inertial>
+  </link>
+ 
+
+  <!-- right wheel Link -->
+  <link name="right_wheel">
+    <collision>
+      <geometry>
+        <sphere radius="${wheel_radius}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <geometry>
+        <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+        <!-- <mesh filename="file://${mesh_path}/right_wheel2.stl" scale="0.001 0.001 0.001" /> -->
+      </geometry>
+      <origin xyz="0 0 0" rpy="1.57 0 0"/>
+      <material name="white"/>
+    </visual>
+
+    <inertial>
+      <mass value="${wheel_mass}"/>
+      <inertia
+        ixx="${wheel_inertia}" iyy="${(1/12.0)*wheel_mass*(3*wheel_radius**2 + wheel_length**2)}" izz="${wheel_inertia}"
+        ixy="0.0" ixz="0.0" iyz="0.0"/>
+      </inertial>
+  </link>
+
+  <!-- caster frontal wheel Link -->
+  <link name="caster">
+    <collision>
+      <geometry>
+        <sphere radius="${caster_radius}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <geometry>
+        <sphere radius="${caster_radius}"/>
+      </geometry>
+      <material name="white"/>
+    </visual>
+
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="${caster_mass}"/>
+      <inertia 
+      ixx="${caster_inertia}" ixy="0.0" ixz="0.0"
+      iyy="${caster_inertia}" iyz="0.0"
+      izz="${caster_inertia}"/>
+    </inertial>
+  </link>
+
+  <gazebo reference="caster">
+      <mu1 value="0.01"/>
+      <mu2 value="0.01"/>
+  </gazebo>
+  <!-- JOINT    -->
+
+  <joint name="base_footprint_joint" type="fixed">
+    <origin xyz="0 0 0.2" rpy="0 0 0"/>
+    <parent link="base_footprint"/>
+    <child link="chassis"/>
+  </joint>
+
+  <joint name="caster_joint" type="fixed">
+    <origin xyz="0.4 0 -0.15" rpy="0 0 0"/>
+    <parent link="chassis"/>
+    <child link="caster"/>
+  </joint>
+
+  <joint name="left_wheel_joint" type="continuous">
+    <origin xyz="0 0.35 -0.15" rpy="0 0 0"/>
+    <parent link="chassis"/>
+    <child link="left_wheel"/>
+    <axis xyz="0 1 0"/>
+    <!-- <dynamics damping="0.01"/> -->
+  </joint>
+
+  <joint name="right_wheel_joint" type="continuous">
+    <origin xyz="0 -0.35 -0.15" rpy="0 0 0"/>
+    <parent link="chassis"/>
+    <child link="right_wheel"/>
+    <axis xyz="0 1 0"/>
+    <!-- <dynamics damping="0.01"/> -->
+  </joint>
+  
+</robot>
